@@ -1,5 +1,5 @@
 
-name: Extract ZIP to Main Repository
+name: Extract ZIP to Main
 
 on:
   workflow_dispatch:
@@ -23,25 +23,28 @@ jobs:
           mkdir -p temp_extract
           unzip -o LVNG-ZORCH-source.zip -d temp_extract
 
-      - name: Find Project Folder
+      - name: Locate Android Project
         run: |
-          PROJECT=$(find temp_extract -type f \( -name "settings.gradle" -o -name "settings.gradle.kts" \) -print -quit)
+          PROJECT=$(find temp_extract -type f \
+            \( -name "settings.gradle" -o -name "settings.gradle.kts" \) \
+            -print -quit)
 
           if [ -z "$PROJECT" ]; then
             echo "Gradle project tidak ditemukan!"
             exit 1
           fi
 
-          echo "SOURCE_DIR=$(dirname "$PROJECT")" >> $GITHUB_ENV
+          echo "SOURCE_DIR=$(dirname "$PROJECT")" >> "$GITHUB_ENV"
 
-      - name: Copy All Files to Main
+      - name: Copy Project to Root
         run: |
           rsync -av \
-            --exclude='.git/' \
-            --exclude='.github/workflows/extract-zip.yml' \
+            --exclude='.github/' \
             "$SOURCE_DIR"/ ./
 
-      - name: Commit Extracted Files
+          rm -rf temp_extract
+
+      - name: Commit and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -49,9 +52,9 @@ jobs:
           git add -A
 
           if git diff --cached --quiet; then
-            echo "Tidak ada perubahan file."
+            echo "Tidak ada perubahan."
           else
-            git commit -m "Extract LVNG ZORCH source into main"
+            git commit -m "Install LVNG ZORCH source"
             git push origin main
           fi
           
