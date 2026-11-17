@@ -17,55 +17,54 @@ permissions:
 
 jobs:
   build:
-    name: Build Android APK
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
-      # 1. Download source
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. Setup Java
-      - name: Setup JDK 17
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-          cache: gradle
 
-      # 3. Setup Android SDK
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      # 4. Install Android SDK packages
-      - name: Install SDK Packages
-        run: |
-          sdkmanager --install \
-            "platform-tools" \
-            "platforms;android-36" \
-            "build-tools;36.0.0"
-
-      # 5. Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
 
-      # 6. Check project
-      - name: Check Project Files
+      - name: Install Android SDK Packages
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME/cmdline-tools" -name sdkmanager -type f | head -n 1)
+
+          if [ -z "$SDKMANAGER" ]; then
+            echo "sdkmanager not found!"
+            exit 1
+          fi
+
+          yes | "$SDKMANAGER" --licenses || true
+
+          "$SDKMANAGER" --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
+
+      - name: Verify Project
         run: |
           test -f settings.gradle.kts
           test -f build.gradle.kts
           test -f app/build.gradle.kts
           test -f app/src/main/AndroidManifest.xml
 
-      # 7. Build APK
       - name: Build Debug APK
-        run: |
-          gradle --no-daemon clean assembleDebug
+        run: gradle --no-daemon clean assembleDebug
 
-      # 8. Upload APK
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LVNG-ZORCH-APK
