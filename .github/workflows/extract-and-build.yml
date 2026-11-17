@@ -1,0 +1,62 @@
+name: Extract ZIP and Build LVNG - ZORCH
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "LVNG-ZORCH-source.zip"
+      - ".github/workflows/extract-and-build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  extract-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check source ZIP
+        run: |
+          test -f "LVNG-ZORCH-source.zip" || {
+            echo "File LVNG-ZORCH-source.zip tidak ditemukan di root repository."
+            exit 1
+          }
+
+      - name: Extract source ZIP
+        run: |
+          mkdir -p "$RUNNER_TEMP/lvng-source"
+          unzip -q "LVNG-ZORCH-source.zip" -d "$RUNNER_TEMP/lvng-source"
+          test -d "$RUNNER_TEMP/lvng-source/lvng_zorch_project" || {
+            echo "Folder lvng_zorch_project tidak ditemukan di dalam ZIP."
+            find "$RUNNER_TEMP/lvng-source" -maxdepth 3 -type f
+            exit 1
+          }
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.11.1"
+
+      - name: Build debug APK from extracted project
+        working-directory: ${{ runner.temp }}/lvng-source/lvng_zorch_project
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LVNG-ZORCH-debug-apk
+          path: ${{ runner.temp }}/lvng-source/lvng_zorch_project/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
