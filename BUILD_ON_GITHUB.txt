@@ -1,0 +1,9 @@
+1. Upload the contents of this ZIP to the root of your GitHub repository.
+2. Commit the files to branch main.
+3. Open the Actions tab.
+4. Select "Build LVNG - ZORCH APK".
+5. Wait for the workflow to finish.
+6. Download the "LVNG-ZORCH-debug-apk" artifact from the run summary.
+7. Extract app-debug.apk from the downloaded artifact ZIP.
+
+Note: Key Mapping presets and sensitivity values are local UI settings. Macro Record is a demo state toggle, not a game input recorder. Native game-control integration is not included.

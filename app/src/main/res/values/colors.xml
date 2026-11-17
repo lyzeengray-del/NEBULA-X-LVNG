@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="app_bg">#080D19</color>
+    <color name="surface">#111C35</color>
+    <color name="surface_alt">#172544</color>
+    <color name="accent">#F21B68</color>
+    <color name="accent_soft">#FF4C8B</color>
+    <color name="text_primary">#F6F7FC</color>
+    <color name="text_secondary">#AAB4CC</color>
+</resources>
